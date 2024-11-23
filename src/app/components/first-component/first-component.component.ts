@@ -7,7 +7,7 @@ import { Component, Inject } from '@angular/core';
   styleUrl: './first-component.component.css',
 })
 export class FirstComponentComponent {
-  contador = 0;
+  contador = 'alguma mensagem';
 
   handleSocketError(error: any) {
     console.error('Erro no websocket:', error);
@@ -17,20 +17,32 @@ export class FirstComponentComponent {
     console.log('Websocket fechado.');
   }
 
-  handleSocketOpen() {
+  handleSocketOpen(socket: WebSocket) {
     console.log('Websocket conectado.');
+    socket.send(this.contador);
   }
 
   quandoClicado() {
-    // const socket: WebSocket = new WebSocket('ws://localhost:8080/teste');
+    let socket = new WebSocket('ws://localhost:8080/teste');
+    socket.onopen = (event) => {
+      this.handleSocketOpen(socket);
+    };
     // socket.addEventListener('open', this.handleSocketOpen);
+    socket.onerror = (error) => {
+      this.handleSocketError(error);
+    };
     // socket.addEventListener('error', this.handleSocketError);
+    socket.onclose = (event) => {
+      this.handleSocketClose();
+    };
     // socket.addEventListener('close', this.handleSocketClose);
-    // socket.onmessage = (event) => {
-    //   console.log(event.data);
-    //   this.contador += event.data;
-    // };
+    socket.onmessage = (event) => {
+      console.log(event.data);
+      this.contador += event.data;
+    };
 
-    this.contador += 1;
+    // this.contador = '';
+
+    // this.contador += 1;
   }
 }
