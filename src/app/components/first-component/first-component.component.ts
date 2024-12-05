@@ -1,55 +1,77 @@
 import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-first-component',
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './first-component.component.html',
   styleUrl: './first-component.component.css',
 })
 export class FirstComponentComponent {
-  contador = 'Esta é uma mensagem enviada pelo 4200';
+  address = '';
+  messages: string[] = [];
 
-  // handleSocketError(error: any) {
-  //   console.error('Erro no websocket:', error);
-  // }
+  socket!: WebSocket;
 
-  // handleSocketClose() {
-  //   console.log('Websocket fechado.');
-  // }
+  handleSocketError(error: any) {
+    console.error('Erro no websocket:', error);
+  }
 
-  // handleSocketOpen(socket: WebSocket) {
-  //   console.log('Websocket conectado.');
-  //   socket.send(this.contador);
-  // }
+  handleSocketClose() {
+    console.log('Websocket fechado.');
+  }
+
+  handleSocketOpen(socket: WebSocket) {
+    console.log('Websocket conectado.');
+  }
+
+  iniciarConexão() {
+    this.socket = new WebSocket('ws://localhost:8080/teste');
+
+    this.socket.onopen = () => {
+      this.handleSocketOpen(this.socket);
+    };
+    // socket.addEventListener('open', this.handleSocketOpen);
+    this.socket.onerror = (error: Event) => {
+      this.handleSocketError(error);
+    };
+    // socket.addEventListener('error', this.handleSocketError);
+    this.socket.onclose = () => {
+      this.handleSocketClose();
+    };
+    // socket.addEventListener('close', this.handleSocketClose);
+    this.socket.onmessage = (event: MessageEvent) => {
+      console.log('Mensagem recebida', event.data);
+      this.messages.push(event.data);
+    };
+  }
+
+  enviarMensagem(address: string) {
+    console.log('clicado');
+    try {
+      console.log('Estado do WebSocket:', this.socket.readyState);
+      if (this.socket.readyState === WebSocket.OPEN) {
+        this.socket.send(address);
+        console.log('Mensagem enviada: ', address);
+      } else {
+        console.error(
+          'WebSocket não está conectado. Estado atual:',
+          this.socket.readyState
+        );
+      }
+    } catch (error) {
+      console.error('Erro ao enviar mensagem');
+    }
+  }
 
   digitou() {
-    console.log('pera ai');
+    console.log('digitou');
   }
 
   quandoClicado() {
-    // let socket = new WebSocket('ws://localhost:8080/teste');
-    // socket.onopen = (event) => {
-    //   this.handleSocketOpen(socket);
-    // };
-    // // socket.addEventListener('open', this.handleSocketOpen);
-    // socket.onerror = (error) => {
-    //   this.handleSocketError(error);
-    // };
-    // // socket.addEventListener('error', this.handleSocketError);
-    // socket.onclose = (event) => {
-    //   this.handleSocketClose();
-    // };
-    // // socket.addEventListener('close', this.handleSocketClose);
-    // socket.onmessage = (event) => {
-    //   if (event.data === 'Esta é uma mensagem enviada pelo 4200') {
-    //     console.log(
-    //       'A função funciona também quando enviamos a mensagem e não apenas quando recebemos'
-    //     );
-    //   }
-    //   console.log(event.data);
-    //   document.body.innerHTML += `${event.data}`
-    // };
-    // this.contador = '';
-    // this.contador += 1;
+    this.iniciarConexão();
+    // teste.innerHTML += `Foi isso que digitou?: ${address}
+    //   <br>
+    // `;
   }
 }
