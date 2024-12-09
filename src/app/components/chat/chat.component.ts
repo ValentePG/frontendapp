@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { WebSocketConfigure } from '../../WebSocketConfigure/WebSocketConfigure';
+import { WebSocketService } from '../../services/webSocketService.service';
 
 @Component({
   selector: 'app-chat-component',
@@ -10,24 +10,26 @@ import { WebSocketConfigure } from '../../WebSocketConfigure/WebSocketConfigure'
 })
 export class ChatComponent {
   message = '';
-  webSocket: WebSocketConfigure = new WebSocketConfigure();
-  messages: string[] = this.webSocket.messages;
+  nome = '';
+  messages: string[];
+  isNamed: boolean = false;
   isConnected: boolean = false;
 
-  constructor() {
-    this.webSocket.onConnectionChange = (isConnected: boolean) => {
+  constructor(private webSocketService: WebSocketService) {
+    this.webSocketService.onConnectionChange = (isConnected: boolean) => {
       this.isConnected = isConnected;
     };
+    this.messages = this.webSocketService.messages;
   }
 
-  sendMessage(address: string) {
+  sendMessage(address: string): void {
     if (!this.isWebSocketConnected()) {
       console.error('O WebSocket não está conectado');
       return;
     }
 
     try {
-      this.webSocket.socket?.send(address);
+      this.webSocketService?.socket?.send(address);
       console.log('Mensagem enviada: ', address);
     } catch (error) {
       console.error(
@@ -37,11 +39,11 @@ export class ChatComponent {
   }
 
   private isWebSocketConnected(): boolean {
-    if (!this.webSocket.socket) {
+    if (!this.webSocketService.socket) {
       return false;
     }
 
-    const socketState = this.webSocket.socket.readyState;
+    const socketState = this.webSocketService.socket.readyState;
     console.log('Estado do WebSocket:', socketState);
 
     if (socketState !== WebSocket.OPEN) {
@@ -52,12 +54,34 @@ export class ChatComponent {
     return true;
   }
 
-  connectionStart() {
-    this.webSocket.startConnection();
-    this.isConnected = true;
+  // função para validar se o nome é vazio
+  private validateName(): boolean {
+    if (this.nome === '' || this.nome.length < 4) {
+      alert('Nome não pode ser vazio ou menor que 4 caracteres');
+      return false;
+    }
+    return true;
   }
 
-  connectionStop() {
-    this.webSocket.closeConnection();
+  private clearMessages(): void {
+    this.messages = [];
+  }
+
+  connectionStart(): void {
+    if (this.validateName()) {
+      this.webSocketService.startConnection();
+      this.isNamed = true;
+    }
+
+    if (this.messages.length === 0) {
+      this.messages = this.webSocketService.messages;
+    }
+
+    // this.isConnected = true;
+  }
+
+  connectionStop(): void {
+    this.webSocketService.closeConnection();
+    this.clearMessages();
   }
 }

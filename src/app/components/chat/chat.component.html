@@ -1,10 +1,12 @@
-<h2>Works</h2>
-<input type="text" [(ngModel)]="message" name="teste" id="teste" />
-<button (click)="connectionStart()" [disabled]="isConnected">connect</button>
-<button (click)="sendMessage(message)">send</button>
-<button (click)="connectionStop()" [disabled]="!isConnected">desconnect</button>
+<h2>Live Chat</h2>
 @for(message of messages; track $index){
 <div>
-  <p> Mensagem: {{ message }} </p>
+  <p> {{ nome }}: {{ message }} </p>
 </div>
 }
+
+<input type="text" [disabled]="isNamed" placeholder="digite seu nome" [(ngModel)]="nome" />
+<input type="text" placeholder="digite sua mensagem" [(ngModel)]="message" />
+<button (click)="connectionStart()" [disabled]="isConnected">connect</button>
+<button (click)="sendMessage(message)" [disabled]="!isConnected">send</button>
+<button (click)="connectionStop()" [disabled]="!isConnected">desconnect</button>
