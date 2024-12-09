@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
+import { ChatInfo } from '../model/chatInfo';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WebSocketService {
   socket: WebSocket | null = null;
-  messages: string[] = [];
+  messages: ChatInfo[] = [];
   onConnectionChange: ((isConnected: boolean) => void) | null = null;
 
   constructor() {}
@@ -57,8 +58,7 @@ export class WebSocketService {
   }
 
   private handleSocketMessage(event: MessageEvent): void {
-    const message = event.data;
+    const message: ChatInfo = JSON.parse(event.data);
     this.messages.push(message);
-    console.log('Mensagem recebida:', message);
   }
 }

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { WebSocketService } from '../../services/webSocketService.service';
+import { ChatInfo } from '../../model/chatInfo';
 
 @Component({
   selector: 'app-chat-component',
@@ -11,7 +12,7 @@ import { WebSocketService } from '../../services/webSocketService.service';
 export class ChatComponent {
   message = '';
   nome = '';
-  messages: string[];
+  messages: ChatInfo[];
   isNamed: boolean = false;
   isConnected: boolean = false;
 
@@ -28,9 +29,13 @@ export class ChatComponent {
       return;
     }
 
+    const mensagem: ChatInfo = {
+      user: this.nome,
+      message: this.message,
+    };
+
     try {
-      this.webSocketService?.socket?.send(address);
-      console.log('Mensagem enviada: ', address);
+      this.webSocketService?.socket?.send(JSON.stringify(mensagem));
     } catch (error) {
       console.error(
         'A mensagem não foi enviada, possivelmente um erro do servidor'
