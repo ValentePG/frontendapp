@@ -9,41 +9,55 @@ import { WebSocketConfigure } from '../../WebSocketConfigure/WebSocketConfigure'
   styleUrl: './chat.component.css',
 })
 export class ChatComponent {
-  address = '';
+  message = '';
   webSocket: WebSocketConfigure = new WebSocketConfigure();
   messages: string[] = this.webSocket.messages;
+  isConnected: boolean = false;
 
-  digitou() {
-    console.log('digitou');
+  constructor() {
+    this.webSocket.onConnectionChange = (isConnected: boolean) => {
+      this.isConnected = isConnected;
+    };
   }
 
-  enviarMensagem(address: string) {
-    console.log('clicado');
-    if (this.webSocket.socket) {
-      try {
-        console.log('Estado do WebSocket:', this.webSocket.socket.readyState);
-        if (this.webSocket.socket.readyState === WebSocket.OPEN) {
-          this.webSocket.socket.send(address);
-          console.log('Mensagem enviada: ', address);
-        } else {
-          console.log('Este webSocket não está aberto');
-        }
-      } catch (error) {
-        console.error(
-          'A mensagem não foi enviada, possivelmente um erro do servidor'
-        );
-      }
-    } else {
-      console.log(
-        'A conexão ainda não foi estabelecida, tente se conectar antes de enviar a mensagem!'
+  sendMessage(address: string) {
+    if (!this.isWebSocketConnected()) {
+      console.error('O WebSocket não está conectado');
+      return;
+    }
+
+    try {
+      this.webSocket.socket?.send(address);
+      console.log('Mensagem enviada: ', address);
+    } catch (error) {
+      console.error(
+        'A mensagem não foi enviada, possivelmente um erro do servidor'
       );
     }
   }
 
-  quandoClicado() {
-    this.webSocket.iniciarConexão();
-    // teste.innerHTML += `Foi isso que digitou?: ${address}
-    //   <br>
-    // `;
+  private isWebSocketConnected(): boolean {
+    if (!this.webSocket.socket) {
+      return false;
+    }
+
+    const socketState = this.webSocket.socket.readyState;
+    console.log('Estado do WebSocket:', socketState);
+
+    if (socketState !== WebSocket.OPEN) {
+      console.log('Este webSocket não está aberto');
+      return false;
+    }
+
+    return true;
+  }
+
+  connectionStart() {
+    this.webSocket.startConnection();
+    this.isConnected = true;
+  }
+
+  connectionStop() {
+    this.webSocket.closeConnection();
   }
 }

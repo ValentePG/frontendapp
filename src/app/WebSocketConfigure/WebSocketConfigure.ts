@@ -1,44 +1,52 @@
 export class WebSocketConfigure {
-  socket!: WebSocket;
-
+  socket: WebSocket | null = null;
   messages: string[] = [];
+  onConnectionChange: ((isConnected: boolean) => void) | null = null;
 
   constructor() {}
 
-  handleSocketError(error: any) {
+  handleSocketError(error: Event): void {
     console.error('Erro no websocket:', error);
   }
 
-  handleSocketClose() {
+  handleSocketClose(): void {
     console.log('Websocket fechado.');
+    this.onConnectionChange?.(false);
   }
 
-  handleSocketOpen() {
+  handleSocketOpen(): void {
     console.log('Websocket conectado.');
+    this.onConnectionChange?.(true);
   }
 
-  iniciarConexão() {
+  handleSocketMessage(event: MessageEvent): void {
+    const message = event.data;
+    this.messages.push(message);
+    console.log('Mensagem recebida:', message);
+  }
+
+  startConnection(): void {
     if (this.socket) {
       console.log('Conexão já estabelecida!');
       return;
     }
+
     this.socket = new WebSocket('ws://localhost:8080/teste');
 
-    this.socket.onopen = () => {
-      this.handleSocketOpen();
-    };
-    // socket.addEventListener('open', this.handleSocketOpen);
-    this.socket.onerror = (error: Event) => {
-      this.handleSocketError(error);
-    };
-    // socket.addEventListener('error', this.handleSocketError);
-    this.socket.onclose = () => {
-      this.handleSocketClose();
-    };
-    // socket.addEventListener('close', this.handleSocketClose);
-    this.socket.onmessage = (event: MessageEvent) => {
-      console.log('Mensagem recebida', event.data);
-      this.messages.push(event.data);
-    };
+    this.socket.onopen = () => this.handleSocketOpen();
+
+    this.socket.onerror = (error: Event) => this.handleSocketError(error);
+
+    this.socket.onclose = () => this.handleSocketClose();
+
+    this.socket.onmessage = (event: MessageEvent) =>
+      this.handleSocketMessage(event);
+  }
+
+  closeConnection(): void {
+    if (this.socket) {
+      this.socket.close();
+      console.log('Conexão fechada pelo cliente.');
+    }
   }
 }

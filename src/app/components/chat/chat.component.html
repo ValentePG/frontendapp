@@ -1,7 +1,8 @@
 <h2>Works</h2>
-<input type="text" [(ngModel)]="address" (keyup)="digitou()" name="teste" id="teste" />
-<button (click)="quandoClicado()">conectar</button>
-<button (click)="enviarMensagem(address)">enviar</button>
+<input type="text" [(ngModel)]="message" name="teste" id="teste" />
+<button (click)="connectionStart()" [disabled]="isConnected">connect</button>
+<button (click)="sendMessage(message)">send</button>
+<button (click)="connectionStop()" [disabled]="!isConnected">desconnect</button>
 @for(message of messages; track $index){
 <div>
   <p> Mensagem: {{ message }} </p>
